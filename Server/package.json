@@ -1,0 +1,22 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "Simple Gravity Wars Server",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "None"
+  },
+  "keywords": [
+    "None"
+  ],
+  "author": "Matthew Smith",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "websocket": "^1.0.26"
+  }
+}

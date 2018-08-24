@@ -6,7 +6,8 @@ var cvHeight = cv.height;
 $('#canvas').attr("width",$(window).width());
 $('#canvas').attr("height",$(window).height());
 
-var zoom = 1.0;
+var zoom = 3.0;
+var connected = false;
 
 class Vector {
   constructor(x, y) {
@@ -26,9 +27,54 @@ class Vector {
   }
 }
 
+var windowWidth = $(window).width();
+var windowHeight = $(window).height();
+
+window.addEventListener("resize", function() {
+  windowWidth = $(window).width();
+  windowHeight = $(window).height();
+  $('#canvas').attr("width",$(window).width());
+  $('#canvas').attr("height",$(window).height());
+  console.log("Resize");
+});
+var myX = 0.0;
+var myY = 0.0;
+var myMass = 100.0;
+//TODO : Check to make sure ID is avalible...maybe a server provided REST endpoint of already taken IDs?
+var myId = Math.random() + 1;
+
 // Simple scene description : an array of colored rects
 var particles = new Array();
 
+// open connection
+var connection = new WebSocket('ws://127.0.0.1:1337');
+
+connection.onopen = function () {
+  console.log("Connected!");
+  var packet = {type : "first", playerId : myId};
+  connection.send(JSON.stringify(packet));
+  connected = true;
+};
+
+connection.onmessage = function (message) {
+  var obj = JSON.parse(message.data);
+  obj.forEach(function(o) {
+    if(o.playerId == myId){
+      myX = o.position.x;
+      myY = o.position.y;
+      myMass = o.mass;
+    }
+  });
+  particles = JSON.parse(message.data);
+};
+
+
+var cursorX;
+var cursorY;
+document.onmousemove = function(e){
+    cursorX = e.pageX;
+    cursorY = e.pageY;
+}
 
 class Particle {
   constructor(position, velocity, mass) {
@@ -57,42 +103,71 @@ class Particle {
     var otherGuyIndex = particles.indexOf(otherGuy);
     particles.splice(otherGuyIndex, 1);
     this.mass += otherGuy.mass;
-    //var index = particles.indexOf(this);
-    //particles.splice(index, 1);
-    //particles.push(new Particle(new Vector(this.position.x, this.position.y), new Vector(0, 0), this.mass < 5 ? 5 : this.mass + otherGuy.mass)) ;
-    //particles.push(new Particle(new Vector(this.position.x + 100, this.position.y + 100), new Vector(0, 0), this.mass + 10));
+  }
+}
+
+setInterval(updateNetwork, 20);
+
+function updateNetwork(){
+  if(connected){
+    var direction = new Vector((windowWidth / 2.0) - cursorX, (windowHeight / 2.0) - cursorY);
+    direction.normalize();
+    var packet = {type : "normal", playerId : myId, x : direction.x, y : direction.y};
+    connection.send(JSON.stringify(packet));
   }
 }
 
 // animation : always running loop.
 
 function animate() {
+  zoom = Math.sqrt(myMass) / 5;
+  //zoom += 0.009;
   // call again next time we can draw
   requestAnimationFrame(animate);
   // clear canvas
-  //ctx.clearRect(0, 0, 1920, 1080);
+  ctx.clearRect(0, 0, 1920, 1080);
   // draw everything
-  particles.forEach(function(o) {
-    o.simulate(particles);
+
+  ctx.strokeStyle = '#d3d3d3';
+  ctx.lineWidth = 2;
+  for(var x = 0; x < windowWidth * zoom; x += 100){
     ctx.beginPath();
-    ctx.arc(o.position.x / zoom, o.position.y / zoom, o.mass / zoom, 0, 2 * Math.PI, false);
-    ctx.fillStyle = 'green';
-    ctx.fill();
-    ctx.lineWidth = 5;
-    ctx.strokeStyle = '#003300';
+    ctx.moveTo((x - myX % 100) / zoom,0);
+    ctx.lineTo((x - myX % 100) / zoom,windowHeight);
     ctx.stroke();
+  }
+
+  for(var y = 0; y < windowHeight * zoom; y += 100){
+    ctx.beginPath();
+    ctx.moveTo(0,(y - myY % 100) / zoom);
+    ctx.lineTo(windowWidth, (y - myY % 100) / zoom);
+    ctx.stroke();
+  }
+  ctx.beginPath();
+  ctx.arc((windowWidth / 2.0), (windowHeight / 2.0), myMass / zoom, 0, 2 * Math.PI, false);
+  ctx.fillStyle = '#ff0000';
+  ctx.fill();
+  // ctx.lineWidth = 5;
+  // ctx.strokeStyle = '#003300';
+  // ctx.stroke();
+
+  //ctx.drawImage(rocket, dx, dy, dWidth, dHeight);
+
+  particles.forEach(function(o) {
+    if(!(o.playerId == myId)){
+    // o.simulate(particles);
+    ctx.beginPath();
+    //console.log(myY);
+    ctx.arc((o.position.x / zoom) - (myX / zoom) + (windowWidth /  2.0), (o.position.y / zoom) - (myY / zoom) + (windowHeight /  2.0), o.mass / zoom, 0, 2 * Math.PI, false);
+    ctx.fillStyle = o.color;
+    ctx.fill();
+  }
   });
-  //
-  ctx.fillStyle = '#000';
+
 }
 
 animate();
 
-
-// click handler to add random rects
-window.addEventListener('click', function(e) {
-  addRandRect(e.pageX, e.pageY);
-});
 
 
 window.addEventListener('scroll', function(e) {
@@ -100,10 +175,3 @@ window.addEventListener('scroll', function(e) {
     zoom++;
 }
 });
-
-function addRandRect(x, y) {
-  //particles.push(new Particle(new Vector(x, y), new Vector(1, 2), 50));
-  for(var i = 0; i < 20; i++){
-    particles.push(new Particle(new Vector(1920 / 4 + Math.random() * (1920 / 2), 1080 / 4 + Math.random() * (1080 / 2)), new Vector(0, 0), 1));
-  }
-}
