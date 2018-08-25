@@ -121,6 +121,7 @@ function updateNetwork(){
 
 function animate() {
   zoom = Math.sqrt(myMass) / 5;
+  //zoom = 20.0;
   //zoom += 0.009;
   // call again next time we can draw
   requestAnimationFrame(animate);
@@ -130,17 +131,17 @@ function animate() {
 
   ctx.strokeStyle = '#d3d3d3';
   ctx.lineWidth = 2;
-  for(var x = 0; x < windowWidth * zoom; x += 100){
+  for(var x = 0; x < windowWidth * zoom; x += 150){
     ctx.beginPath();
-    ctx.moveTo((x - myX % 100) / zoom,0);
-    ctx.lineTo((x - myX % 100) / zoom,windowHeight);
+    ctx.moveTo((x - myX % 150) / zoom,0);
+    ctx.lineTo((x - myX % 150) / zoom,windowHeight);
     ctx.stroke();
   }
 
-  for(var y = 0; y < windowHeight * zoom; y += 100){
+  for(var y = 0; y < windowHeight * zoom; y += 150){
     ctx.beginPath();
-    ctx.moveTo(0,(y - myY % 100) / zoom);
-    ctx.lineTo(windowWidth, (y - myY % 100) / zoom);
+    ctx.moveTo(0,(y - myY % 150) / zoom);
+    ctx.lineTo(windowWidth, (y - myY % 150) / zoom);
     ctx.stroke();
   }
   ctx.beginPath();
@@ -162,6 +163,10 @@ function animate() {
     ctx.fillStyle = o.color;
     ctx.fill();
   }
+    //if(o.isDead){
+      //ctx.fillStyle = 'rgba(225,225,225,0.5)';
+      //ctx.fillRect(0,0,windowWidth,windowHeight);
+    //}
   });
 
 }

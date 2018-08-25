@@ -1,6 +1,13 @@
 var WebSocketServer = require('websocket').server;
 var http = require('http');
 
+var express = require('express');
+var app = express();
+
+app.use(express.static('public'));
+
+app.listen(80, "0.0.0.0");
+
 class Vector {
   constructor(x, y) {
     this.x = x;
@@ -43,6 +50,9 @@ class Particle {
       //orange
       this.color = '#ffff00';
     }
+    if(playerId > 1){
+      this.color = '#ff0000';
+    }
   }
   simulate (particles){
     this.velocity.translate(this.impulse.x, this.impulse.y);
@@ -58,9 +68,10 @@ class Particle {
         that.split(o);
       }
       direction.normalize();
-      var mag = o.mass * that.mass / Math.pow(radius / 1000, 2);
+      radius /= 50000;
+      var mag = o.mass * that.mass / Math.pow(radius / 5000000, 2);
       mag /= that.mass;
-      mag *= 0.000015;
+      mag *= 0.000000000000000000001;
       that.velocity.translate(direction.x * mag, direction.y * mag);
     }
     });
@@ -82,8 +93,8 @@ class Particle {
 
 var players = new Array();
 
-for(var i = 0; i < 100; i++){
-  players.push(new Particle(new Vector((Math.random() - 0.5) * 10000, (Math.random() - 0.5) * 10000), new Vector(0, 0), 25, Math.random()));
+for(var i = 0; i < 400; i++){
+  players.push(new Particle(new Vector((Math.random() - 0.5) * 20000, (Math.random() - 0.5) * 20000), new Vector(0, 0), 25, Math.random()));
 }
 setInterval(simulate, 20);
 
@@ -128,8 +139,8 @@ wsServer.on('request', function(request) {
     }else{
       players.forEach(function(o) {
         if(o.playerId == obj.playerId){
-          o.impulse.x = obj.x / 3;
-          o.impulse.y = obj.y / 3;
+          o.impulse.x = obj.x / 5;
+          o.impulse.y = obj.y / 5;
           //return;
         }
       });
