@@ -51,7 +51,7 @@ var particles = new Array();
 if(location.hostname == 'localhost'){
   var connection = new WebSocket('ws://localhost:1337');
 }else{
-  var connection = new WebSocket('ws://66.27.78.225:1337');
+  var connection = new WebSocket('ws://192.168.7.133:1337');
 
 }
 
@@ -72,7 +72,7 @@ connection.onmessage = function (message) {
       myColor = o.color;
     }
   });
-  particles = JSON.parse(message.data);
+  particles = obj;
 };
 
 
@@ -179,8 +179,6 @@ function animate() {
 }
 
 animate();
-
-
 
 window.addEventListener('scroll', function(e) {
   window.onscroll = function(e) {

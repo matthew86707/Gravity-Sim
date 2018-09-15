@@ -6,7 +6,7 @@ var app = express();
 
 app.use(express.static('public'));
 
-app.listen(80, "0.0.0.0");
+app.listen(80);
 
 class Vector {
   constructor(x, y) {
@@ -69,9 +69,9 @@ class Particle {
       }
       direction.normalize();
       radius /= 50000;
-      var mag = o.mass * that.mass / Math.pow(radius / 5000000, 2);
+      var mag = o.mass * that.mass / Math.pow(Math.sin(radius), 2);
       mag /= that.mass;
-      mag *= 0.000000000000000000001;
+      mag *= 0.0000001;
       that.velocity.translate(direction.x * mag, direction.y * mag);
     }
     });
@@ -94,7 +94,7 @@ class Particle {
 var players = new Array();
 
 for(var i = 0; i < 400; i++){
-  players.push(new Particle(new Vector((Math.random() - 0.5) * 20000, (Math.random() - 0.5) * 20000), new Vector(0, 0), 25, Math.random()));
+  players.push(new Particle(new Vector((Math.random() - 0.5) * 30000, (Math.random() - 0.5) * 30000), new Vector(0, 0), 25, Math.random()));
 }
 setInterval(simulate, 20);
 
